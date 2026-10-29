@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Sapin du LB Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap">
+<style>
+/* Layout : une nuit d'hiver. Le sapin reste visible dans une colonne à gauche, les missions sont des fiches papier à droite. Une seule ambiance, volontairement sombre autour de fiches claires. */
+:root{
+  --night:#0f1d30; --night2:#1a3352; --snow:#e8eff7; --snow-dim:#a9b8ca;
+  --paper:#f7f9fc; --paper2:#eef2f7; --ink:#18222f; --muted:#56657a; --line:#d3dbe6;
+  --gold:#f2b230; --gold-soft:#fff2d2; --red:#cf3f36; --spruce:#1d6a47;
+  --ok:#1f7a4a; --ok-soft:#e1f2e8; --bad:#b3302a; --bad-soft:#fbe8e6;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--night) 0%,var(--night2) 100%) fixed;color:var(--snow);font-family:var(--body);font-size:16px;line-height:1.5;min-height:100vh}
+.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;max-width:1240px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;display:flex;flex-direction:column;gap:14px}
+.brand{font-family:var(--display);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,38px);line-height:1.05;margin:0;text-wrap:balance}
+.sub{color:var(--snow-dim);margin:0;font-size:15px}
+#tree{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.progress{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-weight:700}
+.progress span:last-child{color:var(--gold);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .6s}
+nav.missions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+nav.missions button{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.06);font-size:14px;line-height:1.2;color:var(--snow)}
+nav.missions button:hover{background:rgba(255,255,255,.12)}
+nav.missions button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+nav.missions button[aria-current="true"]{background:var(--paper);color:var(--ink)}
+nav.missions b{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:13px;background:rgba(255,255,255,.14);color:inherit}
+nav.missions button.done b{background:var(--gold);color:var(--ink);box-shadow:0 0 10px var(--gold)}
+nav.missions button[aria-current="true"] b{background:var(--ink);color:var(--paper)}
+nav.missions button.done[aria-current="true"] b{background:var(--gold);color:var(--ink)}
+.finale{background:var(--gold);color:var(--ink);border-radius:10px;padding:12px 14px;font-weight:700;margin:0}
+.reset{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--snow-dim)}
+.linkbtn{all:unset;cursor:pointer;color:var(--snow-dim);text-decoration:underline;font-size:14px}
+.linkbtn:focus-visible{outline:2px solid var(--gold)}
+
+main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.card{background:var(--paper);color:var(--ink);border-radius:14px;padding:clamp(18px,3vw,32px);color-scheme:light;min-width:0}
+.story{background:transparent;color:var(--snow);padding:0}
+.story p{margin:0;max-width:65ch;color:var(--snow-dim)}
+.story strong{color:var(--snow)}
+.eyebrow{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:0 0 4px;font-weight:700}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);line-height:1.1;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:19px;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+h3 .tag{font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--paper2);color:var(--muted)}
+.mission{display:flex;flex-direction:column;gap:22px}
+.learn,.practice{display:flex;flex-direction:column;gap:12px}
+.learn p,.practice p,.learn li{max-width:68ch;margin:0}
+.learn ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.practice{border-top:2px dashed var(--line);padding-top:22px}
+.formule{background:var(--gold-soft);border-left:5px solid var(--gold);border-radius:8px;padding:12px 16px;font-family:var(--display);font-weight:700;font-size:clamp(16px,2.2vw,20px);line-height:1.35}
+.formule small{display:block;font-family:var(--body);font-weight:400;font-size:14px;color:var(--muted);margin-top:4px}
+.exemple{background:var(--paper2);border-radius:8px;padding:12px 16px;font-variant-numeric:tabular-nums}
+.exemple b{color:var(--spruce)}
+.attention{border:2px solid var(--red);border-radius:8px;padding:10px 14px;font-size:15px}
+.attention b{color:var(--red)}
+
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;vertical-align:middle}
+th{background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;line-height:1.2}
+th.sub2{background:#33445a}
+td.l{text-align:left}
+td.given{font-weight:700}
+td.ex{color:var(--muted);font-size:13px;font-style:italic}
+tbody tr:nth-child(even) td{background:#fbfcfe}
+
+input.f,select.f{font:inherit;font-variant-numeric:tabular-nums;color:var(--ink);background:#fff;border:2px solid #b9c5d4;border-radius:6px;padding:4px 6px}
+input.f{width:5.6em;text-align:right}
+select.f{max-width:100%}
+input.f:focus,select.f:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--ink)}
+.f.ok{border-color:var(--ok);background:var(--ok-soft)}
+.f.bad{border-color:var(--bad);background:var(--bad-soft)}
+.sol{display:inline-block;margin-left:6px;font-size:13px;font-weight:700;color:var(--bad);white-space:nowrap}
+
+.qlist{display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none}
+.qlist li{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px}
+.qlist li span.q{flex:1 1 280px;min-width:0}
+
+.bons{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.bon{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.bon .r{display:flex;justify-content:space-between;gap:8px}
+.bon .ref{font-family:var(--display);font-weight:800;font-size:16px}
+.bon .num{font-variant-numeric:tabular-nums;color:var(--muted)}
+.bon .des{color:var(--spruce);font-weight:700}
+.bon .mv{display:flex;justify-content:space-between;background:var(--paper2);border-radius:6px;padding:4px 8px;font-variant-numeric:tabular-nums}
+.bon.compact{font-size:13px;padding:8px 10px}
+.bon select{margin-top:2px}
+
+.lots{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.lot{border-radius:8px;padding:8px 12px;font-variant-numeric:tabular-nums;font-size:14px;border:2px solid var(--ink)}
+.lot.a{background:var(--gold-soft)}
+.lot.b{background:var(--ok-soft)}
+.lot small{display:block;color:var(--muted);font-size:12px}
+.arrow{align-self:center;font-weight:700;color:var(--red);font-size:14px}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:10px;padding:10px 18px;border:2px solid var(--ink);background:var(--ink);color:var(--paper)}
+.btn:hover{background:#2b3a4f}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--paper2)}
+.btn.next{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.fb{margin:0;font-weight:700;min-height:1.5em}
+.fb.ok{color:var(--ok)}
+.fb.bad{color:var(--bad)}
+.hint{background:#eaf2fb;border-radius:8px;padding:10px 14px;font-size:15px}
+.hint b{color:#24507a}
+
+.memo h2{margin-bottom:12px}
+.memo ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:m}
+.memo li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--line)}
+.memo li::before{counter-increment:m;content:counter(m);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:13px;background:var(--paper2);color:var(--muted)}
+.memo li.on::before{background:var(--gold);color:var(--ink)}
+.memo li .lock{color:var(--muted);font-style:italic}
+.memo li.on .lock{display:none}
+.memo li .txt{display:none}
+.memo li.on .txt{display:block}
+
+
+/* sapin */
+.bulb{fill:#3a4a5d;transition:fill .5s}
+.bulb.lit{fill:var(--c);filter:url(#glow);animation:tw 2.6s ease-in-out infinite alternate}
+.wire{fill:none;stroke:#0a2a1c;stroke-width:1.6}
+.wire.lit{stroke:#c99b3a}
+.glabel{font-family:var(--display);font-size:12px;font-weight:700;fill:#5d6f86}
+.glabel.lit{fill:var(--gold)}
+.star{fill:#45566b;transition:fill .6s}
+.star.lit{fill:var(--gold);filter:url(#glow2);animation:tw 1.8s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.72}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.bulb.lit,.star.lit{animation:none}.bar i{transition:none}}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  aside{position:static}
+  #tree{max-width:260px}
+  nav.missions{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<aside>
+  <p class="brand">LB Shop · Bac pro MCV A</p>
+  <h1>Allume le sapin du LB Shop</h1>
+  <p class="sub">8 missions sur les stocks. Chaque mission réussie allume une guirlande. Les 8 réussies allument l'étoile.</p>
+  <svg id="tree" viewBox="0 0 400 525" role="img" aria-label="Sapin de Noël : les guirlandes s'allument à chaque mission réussie"></svg>
+  <div class="progress"><span>Guirlandes allumées</span><span id="count">0 / 8</span></div>
+  <div class="bar"><i id="barfill"></i></div>
+  <p class="finale" id="finale" hidden>Le sapin du LB Shop brille ! Bravo, tu sais suivre un stock en quantité et en valeur.</p>
+  <nav class="missions" aria-label="Missions" id="nav"></nav>
+  <div class="reset" id="resetzone"><button class="linkbtn" id="resetbtn" type="button">Recommencer depuis le début</button></div>
+</aside>
+
+<main id="main">
+  <div class="card story">
+    <p><strong>Novembre au LB Shop : on prépare Noël.</strong> Guirlandes, boules, peluches, bijoux et pyjamas arrivent dans la réserve. Pour ne jamais manquer de produits ni en avoir trop, l'équipe doit <strong>suivre le stock</strong>. Lis chaque « Je comprends », puis réussis le « Je m'entraîne ». Calculatrice autorisée.</p>
+  </div>
+
+  <!-- MISSION 1 -->
+  <section class="card mission" id="m1" data-n="1" hidden>
+    <header><p class="eyebrow">Mission 1 · environ 10 min</p><h2>Les mots du stock</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Le stock, c'est comme ton porte-monnaie. De l'argent <b>rentre</b> (ton salaire), de l'argent <b>sort</b> (tes achats), et il te <b>reste</b> une somme. Au magasin, c'est pareil avec les produits.</p>
+      <ul>
+        <li><b>Le stock</b> : tous les produits que le magasin possède, en réserve et en rayon.</li>
+        <li><b>Une entrée</b> : des produits arrivent (livraison du fournisseur). Le stock <b>augmente</b>.</li>
+        <li><b>Une sortie</b> : des produits partent (vente, casse, vol). Le stock <b>diminue</b>.</li>
+        <li>Chaque mouvement est prouvé par un document : le <b>bon d'entrée</b> ou le <b>bon de sortie</b>.</li>
+        <li><b>La fiche de stock</b> suit un seul produit, jour après jour. Elle commence par le <b>stock initial</b> (ce qu'il y a au départ).</li>
+        <li>Chaque produit a une <b>référence</b> : un code unique, par exemple DEC205 pour la guirlande lumineuse.</li>
+      </ul>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Pour chaque phrase, choisis le bon mot.</p>
+      <ol class="qlist">
+        <li><span class="q">Tous les produits présents dans la réserve et en rayon, prêts à être vendus.</span><select class="f" data-o="m1" data-a="stock"></select></li>
+        <li><span class="q">Des produits arrivent au magasin. Le stock augmente.</span><select class="f" data-o="m1" data-a="entree"></select></li>
+        <li><span class="q">Des produits quittent le magasin (vente, casse, vol). Le stock diminue.</span><select class="f" data-o="m1" data-a="sortie"></select></li>
+        <li><span class="q">Le document qui prouve que la marchandise est arrivée.</span><select class="f" data-o="m1" data-a="be"></select></li>
+        <li><span class="q">Le document qui prouve que la marchandise est partie.</span><select class="f" data-o="m1" data-a="bs"></select></li>
+        <li><span class="q">Le tableau qui suit, jour après jour, les entrées, les sorties et ce qui reste pour UN produit.</span><select class="f" data-o="m1" data-a="fiche"></select></li>
+        <li><span class="q">La quantité en stock au tout début de la période.</span><select class="f" data-o="m1" data-a="init"></select></li>
+        <li><span class="q">Le code unique qui identifie un produit (ex. : DEC205).</span><select class="f" data-o="m1" data-a="ref"></select></li>
+      </ol>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> relis le porte-monnaie. « Augmente » va avec ce qui rentre, « diminue » avec ce qui sort. Un « bon » est toujours un document.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 2 -->
+  <section class="card mission" id="m2" data-n="2" hidden>
+    <header><p class="eyebrow">Mission 2 · environ 10 min</p><h2>Lire les bons d'entrée et de sortie</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Sur chaque bon, regarde trois choses, dans cet ordre :</p>
+      <ul>
+        <li><b>La référence</b> : est-ce bien le produit que je suis ? Un bon pour un autre produit ne compte pas.</li>
+        <li><b>Le numéro</b> : <b>WH</b> veut dire <i>warehouse</i>, l'entrepôt (notre réserve). <b>IN</b> = entrée. <b>OUT</b> = sortie.</li>
+        <li><b>La quantité</b> (et le prix unitaire, PU, sur les bons d'entrée).</li>
+      </ul>
+      <div class="exemple">Exemple : <b>WH/IN310</b> = entrée dans la réserve, bon n° 310. <b>WH/OUT211</b> = sortie de la réserve, bon n° 211.</div>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Tu suis la <b>guirlande lumineuse LED 5 m, référence DEC205</b>. Les bons sont arrivés en désordre. Pour chacun, dis ce qu'il représente.</p>
+      <div class="bons" id="bons2"></div>
+      <ol class="qlist">
+        <li><span class="q">Dans « WH/IN310 », que veut dire WH ?</span><select class="f" data-o="wh" data-a="ent"></select></li>
+      </ol>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> commence par la référence, lettre par lettre et chiffre par chiffre. Si ce n'est pas exactement DEC205, c'est « autre produit », même si c'est aussi une guirlande. Ensuite, regarde le numéro du bon : IN = entrée, OUT = sortie.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 3 -->
+  <section class="card mission" id="m3" data-n="3" hidden>
+    <header><p class="eyebrow">Mission 3 · environ 15 min</p><h2>Remplir la fiche de stock</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>La fiche de stock se remplit ligne par ligne, dans l'ordre des dates. À chaque ligne, on part du stock de la ligne d'avant.</p>
+      <div class="formule">Nouveau stock = stock d'avant + entrée − sortie<small>Une ligne a soit une entrée, soit une sortie. L'autre case reste vide.</small></div>
+      <div class="exemple">Exemple : il y a <b>50</b> paquets. On en reçoit <b>120</b> : 50 + 120 = <b>170</b>. Le lendemain on en sort <b>50</b> : 170 − 50 = <b>120</b>.</div>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Complète la fiche de stock de la guirlande DEC205 avec les bons ci-dessous. Le 01/11, il y avait <b>40 guirlandes</b>.</p>
+      <div class="bons" id="bons3"></div>
+      <div class="scroll">
+      <table>
+        <thead><tr><th colspan="5">FICHE DE STOCK · DEC205 Guirlande lumineuse LED 5 m</th></tr>
+        <tr><th class="sub2">Date</th><th class="sub2">Document</th><th class="sub2">Entrées</th><th class="sub2">Sorties</th><th class="sub2">Stock</th></tr></thead>
+        <tbody>
+          <tr><td>01/11</td><td class="l">Stock initial</td><td></td><td></td><td class="given">40</td></tr>
+          <tr><td>02/11</td><td class="l">WH/IN310</td><td><input class="f" data-a="60"></td><td><input class="f" data-a=""></td><td><input class="f" data-a="100"></td></tr>
+          <tr><td>05/11</td><td class="l">WH/OUT211</td><td><input class="f" data-a=""></td><td><input class="f" data-a="15"></td><td><input class="f" data-a="85"></td></tr>
+          <tr><td>09/11</td><td class="l">WH/OUT212</td><td><input class="f" data-a=""></td><td><input class="f" data-a="30"></td><td><input class="f" data-a="55"></td></tr>
+          <tr><td>12/11</td><td class="l">WH/IN311</td><td><input class="f" data-a="50"></td><td><input class="f" data-a=""></td><td><input class="f" data-a="105"></td></tr>
+          <tr><td>16/11</td><td class="l">WH/OUT214</td><td><input class="f" data-a=""></td><td><input class="f" data-a="45"></td><td><input class="f" data-a="60"></td></tr>
+          <tr><td>20/11</td><td class="l">WH/OUT215</td><td><input class="f" data-a=""></td><td><input class="f" data-a="35"></td><td><input class="f" data-a="25"></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> le 02/11, on part de 40 et on reçoit 60 : 40 + 60 = 100. Le 05/11, on part de 100 et on sort 15. Laisse vide la case qui ne sert pas.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 4 -->
+  <section class="card mission" id="m4" data-n="4" hidden>
+    <header><p class="eyebrow">Mission 4 · environ 15 min</p><h2>Le stock d'alerte</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Quand on commande au fournisseur, la livraison n'arrive pas tout de suite : il y a un <b>délai de livraison</b>. Pendant ce temps, on continue de vendre. Il faut donc commander <b>avant</b> d'être vide.</p>
+      <ul>
+        <li><b>Le stock minimum</b> (ou stock de sécurité) : la petite quantité qu'on garde toujours, au cas où.</li>
+        <li><b>Le stock d'alerte</b> : le signal « il faut commander maintenant ! ». Quand le stock descend à ce niveau, on passe commande.</li>
+      </ul>
+      <div class="formule">Stock d'alerte = sorties par jour × délai de livraison + stock minimum<small>On fait d'abord la multiplication, ensuite l'addition.</small></div>
+      <div class="exemple">Exemple : on vend <b>6</b> paquets par jour, le fournisseur livre en <b>4</b> jours, le stock minimum est <b>3</b>.<br>6 × 4 = 24 (ce qu'on vend pendant l'attente), puis 24 + 3 = <b>27</b>. On commande quand il reste 27 paquets.</div>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Cherche le délai de livraison de chaque fournisseur dans le carnet d'adresses, puis calcule le stock d'alerte.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th colspan="3">CARNET D'ADRESSES DES FOURNISSEURS</th></tr>
+        <tr><th class="sub2">Code</th><th class="sub2">Fournisseur</th><th class="sub2">Délai de livraison</th></tr></thead>
+        <tbody>
+          <tr><td>401010</td><td class="l">Lutin &amp; Co</td><td>4 jours</td></tr>
+          <tr><td>401020</td><td class="l">Déco Nord</td><td>5 jours</td></tr>
+          <tr><td>401030</td><td class="l">Bijoux Étoile</td><td>3 jours</td></tr>
+          <tr><td>401040</td><td class="l">Textil'Kids</td><td>3 jours</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Réf.</th><th>Produit</th><th>Code fournisseur</th><th>Sorties par jour</th><th>Stock minimum</th><th>Délai de livraison</th><th>Stock d'alerte</th></tr></thead>
+        <tbody>
+          <tr><td>JOU118</td><td class="l">Peluche renne 30 cm</td><td>401010</td><td>1</td><td>2</td><td><input class="f" data-a="4"></td><td><input class="f" data-a="6"></td></tr>
+          <tr><td>DEC205</td><td class="l">Guirlande LED 5 m</td><td>401020</td><td>2</td><td>5</td><td><input class="f" data-a="5"></td><td><input class="f" data-a="15"></td></tr>
+          <tr><td>DEC310</td><td class="l">Boules dorées (lot de 6)</td><td>401020</td><td>1</td><td>5</td><td><input class="f" data-a="5"></td><td><input class="f" data-a="10"></td></tr>
+          <tr><td>BIJ042</td><td class="l">Bracelet étoile</td><td>401030</td><td>2</td><td>2</td><td><input class="f" data-a="3"></td><td><input class="f" data-a="8"></td></tr>
+          <tr><td>VET207</td><td class="l">Pyjama enfant motif sapin</td><td>401040</td><td>1</td><td>2</td><td><input class="f" data-a="3"></td><td><input class="f" data-a="5"></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> la peluche vient de 401010, donc Lutin &amp; Co, délai 4 jours. 1 × 4 = 4, puis 4 + 2 = 6.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 5 -->
+  <section class="card mission" id="m5" data-n="5" hidden>
+    <header><p class="eyebrow">Mission 5 · environ 15 min</p><h2>Faut-il commander ?</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <ul>
+        <li><b>Le stock réel</b> : ce qu'on compte vraiment dans la réserve aujourd'hui.</li>
+        <li><b>Quantité vendue en attente</b> : déjà vendue au client, mais pas encore partie (ex. : commande à retirer). Elle va <b>sortir</b>.</li>
+        <li><b>Quantité achetée en attente</b> : commandée au fournisseur, pas encore arrivée. Elle va <b>entrer</b>.</li>
+        <li><b>Le stock théorique</b> : ce qu'il restera vraiment quand tout sera arrivé et parti.</li>
+      </ul>
+      <div class="formule">Stock théorique = stock réel + achetée en attente − vendue en attente</div>
+      <div class="formule">On commande si stock théorique ≤ stock d'alerte<small>≤ veut dire « plus petit ou égal ». Si c'est égal, on commande aussi.</small></div>
+      <div class="formule">Quantité à commander = stock maximum − stock théorique<small>Le stock maximum est la quantité qu'on ne doit pas dépasser (place en réserve, argent immobilisé). Si on ne commande pas, on écrit 0.</small></div>
+      <div class="exemple">Exemple : stock réel <b>1</b>, achetée en attente <b>3</b>, vendue en attente <b>4</b> : 1 + 3 − 4 = <b>0</b>.<br>Stock d'alerte 2 : 0 est plus petit que 2, donc <b>on commande</b>. Stock maximum 5 : 5 − 0 = <b>5</b> à commander.</div>
+      <div class="attention"><b>Attention :</b> le stock théorique peut être négatif si on a vendu plus que ce qu'on a. Exemple : 1 + 5 − 7 = −1. Avec un stock maximum de 10 : 10 − (−1) = 10 + 1 = 11.</div>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Tu retrouves les stocks d'alerte calculés à la mission 4. Complète les cases.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Réf.</th><th>Stock réel</th><th>Vendue en attente</th><th>Achetée en attente</th><th>Stock théorique</th><th>Stock d'alerte</th><th>Commander ?</th><th>Stock maximum</th><th>Quantité à commander</th></tr></thead>
+        <tbody>
+          <tr><td>JOU118</td><td>12</td><td>8</td><td>0</td><td><input class="f" data-a="4"></td><td>6</td><td><select class="f" data-o="on" data-a="O"></select></td><td>30</td><td><input class="f" data-a="26"></td></tr>
+          <tr><td>DEC310</td><td>25</td><td>5</td><td>10</td><td><input class="f" data-a="30"></td><td>10</td><td><select class="f" data-o="on" data-a="N"></select></td><td>40</td><td><input class="f" data-a="0"></td></tr>
+          <tr><td>BIJ042</td><td>6</td><td>2</td><td>4</td><td><input class="f" data-a="8"></td><td>8</td><td><select class="f" data-o="on" data-a="O"></select></td><td>20</td><td><input class="f" data-a="12"></td></tr>
+          <tr><td>VET207</td><td>15</td><td>3</td><td>0</td><td><input class="f" data-a="12"></td><td>5</td><td><select class="f" data-o="on" data-a="N"></select></td><td>25</td><td><input class="f" data-a="0"></td></tr>
+          <tr><td>DEC205</td><td>25</td><td>30</td><td>0</td><td><input class="f" data-a="-5"></td><td>15</td><td><select class="f" data-o="on" data-a="O"></select></td><td>80</td><td><input class="f" data-a="85"></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> BIJ042 : 6 + 4 − 2 = 8, et l'alerte est 8. C'est égal, donc on commande. Pour DEC205, le stock théorique est négatif : écris le signe moins.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 6 -->
+  <section class="card mission" id="m6" data-n="6" hidden>
+    <header><p class="eyebrow">Mission 6 · environ 10 min</p><h2>Combien vaut le stock ?</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Jusqu'ici on a compté des <b>quantités</b>. Maintenant on calcule la <b>valeur</b> du stock en euros : combien le magasin a payé pour ces produits. On utilise le <b>prix d'achat unitaire</b> (PU), c'est-à-dire le prix d'un seul produit.</p>
+      <div class="formule">Montant = quantité × prix unitaire</div>
+      <div class="exemple">Exemple : 10 calendriers de l'Avent achetés <b>2,50 €</b> pièce : 10 × 2,50 = <b>25,00 €</b>.</div>
+      <p>Pour la valeur totale, on additionne les montants de tous les produits.</p>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Calcule la valeur du stock de chaque produit, puis la valeur totale. Écris les centimes avec une virgule (ex. : 22,50).</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Réf.</th><th>Produit</th><th>Quantité en stock</th><th>Prix d'achat unitaire</th><th>Montant</th></tr></thead>
+        <tbody>
+          <tr><td>JOU118</td><td class="l">Peluche renne 30 cm</td><td>12</td><td>8,50 €</td><td><input class="f" data-a="102"> €</td></tr>
+          <tr><td>DEC310</td><td class="l">Boules dorées (lot de 6)</td><td>25</td><td>6,20 €</td><td><input class="f" data-a="155"> €</td></tr>
+          <tr><td>BIJ042</td><td class="l">Bracelet étoile</td><td>6</td><td>3,75 €</td><td><input class="f" data-a="22.50"> €</td></tr>
+          <tr><td>VET207</td><td class="l">Pyjama enfant motif sapin</td><td>15</td><td>9,40 €</td><td><input class="f" data-a="141"> €</td></tr>
+          <tr><td>DEC205</td><td class="l">Guirlande LED 5 m</td><td>25</td><td>4,80 €</td><td><input class="f" data-a="120"> €</td></tr>
+          <tr><td colspan="4" class="l"><b>Valeur totale du stock</b></td><td><input class="f" data-a="540.50"> €</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> peluche : 12 × 8,50 = 102,00 €. Pour le total, additionne les 5 montants.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 7 -->
+  <section class="card mission" id="m7" data-n="7" hidden>
+    <header><p class="eyebrow">Mission 7 · environ 20 min</p><h2>Le CMUP : le prix moyen</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Le fournisseur ne vend pas toujours au même prix. Dans la réserve, les guirlandes achetées 4,50 € et celles achetées 4,80 € sont mélangées : on ne sait plus lesquelles sortent. Alors on calcule un <b>prix moyen</b>.</p>
+      <p><b>CMUP</b> = <b>C</b>oût <b>M</b>oyen <b>U</b>nitaire <b>P</b>ondéré. « Pondéré » veut dire qu'on tient compte des quantités.</p>
+      <div class="formule">CMUP = (valeur du stock + valeur de l'entrée) ÷ (quantité en stock + quantité entrée)<small>On arrondit au centime : 2 chiffres après la virgule.</small></div>
+      <div class="exemple">Exemple : 10 calendriers à 2 € = <b>20 €</b>. On en reçoit 10 à 3 € = <b>30 €</b>.<br>CMUP = (20 + 30) ÷ (10 + 10) = 50 ÷ 20 = <b>2,50 €</b>.<br>On en sort 4 : 4 × 2,50 = <b>10 €</b>. Il reste 16 calendriers, valeur 50 − 10 = <b>40 €</b>.</div>
+      <ul>
+        <li><b>À chaque entrée</b> : montant de l'entrée = quantité × PU. Nouvelle valeur du stock = ancienne valeur + montant de l'entrée. Puis on recalcule le CMUP.</li>
+        <li><b>À chaque sortie</b> : on prend le CMUP du moment. Montant de la sortie = quantité × CMUP. Nouvelle valeur du stock = ancienne valeur − montant de la sortie.</li>
+      </ul>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Reprends la guirlande DEC205 de la mission 3. Les quantités sont déjà écrites. Complète les cases en euros.</p>
+      <div class="scroll">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Date</th><th rowspan="2">Document</th><th colspan="3">Entrées</th><th colspan="3">Sorties</th><th colspan="3">Stock</th></tr>
+          <tr><th class="sub2">Qté</th><th class="sub2">PU</th><th class="sub2">Montant</th><th class="sub2">Qté</th><th class="sub2">PU</th><th class="sub2">Montant</th><th class="sub2">Qté</th><th class="sub2">CMUP</th><th class="sub2">Montant</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>01/11</td><td class="l">Stock initial</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="given">40</td><td class="given">4,50</td><td class="given">180,00</td></tr>
+          <tr><td>02/11</td><td class="l">WH/IN310</td><td>60</td><td>4,80</td><td><input class="f" data-a="288"></td><td></td><td></td><td></td><td>100</td><td><input class="f" data-a="4.68"></td><td><input class="f" data-a="468"></td></tr>
+          <tr><td>05/11</td><td class="l">WH/OUT211</td><td></td><td></td><td></td><td>15</td><td><input class="f" data-a="4.68"></td><td><input class="f" data-a="70.20"></td><td>85</td><td class="ex">inchangé</td><td><input class="f" data-a="397.80"></td></tr>
+          <tr><td>09/11</td><td class="l">WH/OUT212</td><td></td><td></td><td></td><td>30</td><td><input class="f" data-a="4.68"></td><td><input class="f" data-a="140.40"></td><td>55</td><td class="ex">inchangé</td><td><input class="f" data-a="257.40"></td></tr>
+          <tr><td>12/11</td><td class="l">WH/IN311</td><td>50</td><td>5,00</td><td><input class="f" data-a="250"></td><td></td><td></td><td></td><td>105</td><td><input class="f" data-a="4.83"></td><td><input class="f" data-a="507.40"></td></tr>
+          <tr><td>16/11</td><td class="l">WH/OUT214</td><td></td><td></td><td></td><td>45</td><td><input class="f" data-a="4.83"></td><td><input class="f" data-a="217.35"></td><td>60</td><td class="ex">inchangé</td><td><input class="f" data-a="290.05"></td></tr>
+          <tr><td>20/11</td><td class="l">WH/OUT215</td><td></td><td></td><td></td><td>35</td><td><input class="f" data-a="4.83"></td><td><input class="f" data-a="169.05"></td><td>25</td><td class="ex">inchangé</td><td><input class="f" data-a="121"></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> le 02/11 : 60 × 4,80 = 288,00. Valeur du stock : 180,00 + 288,00 = 468,00. CMUP : 468,00 ÷ 100 = 4,68. Le 12/11 : (257,40 + 250,00) ÷ (55 + 50) = 4,8323… arrondi à 4,83.</p>
+      <div><button class="btn next" type="button" hidden>Mission suivante →</button></div>
+    </div>
+  </section>
+
+  <!-- MISSION 8 -->
+  <section class="card mission" id="m8" data-n="8" hidden>
+    <header><p class="eyebrow">Mission 8 · environ 15 min</p><h2>Le PEPS : premier entré, premier sorti</h2></header>
+    <div class="learn">
+      <h3><span class="tag">Je comprends</span></h3>
+      <p>Avec le PEPS (en anglais FIFO, <i>first in, first out</i>), on ne fait pas de moyenne. On range les produits par <b>lots</b>, dans l'ordre d'arrivée. Ceux qui sont arrivés <b>en premier</b> sortent <b>en premier</b>, à <b>leur</b> prix d'achat. C'est comme les yaourts au frigo : on mange d'abord les plus anciens.</p>
+      <div class="lots" aria-label="Exemple de lots">
+        <span class="arrow">sort en premier ←</span>
+        <div class="lot a">Lot 1 : 10 × 2,00 €<small>arrivé le premier</small></div>
+        <div class="lot b">Lot 2 : 10 × 3,00 €<small>arrivé ensuite</small></div>
+      </div>
+      <div class="exemple">On sort <b>12</b> calendriers. On vide d'abord le lot 1 : 10 × 2,00 = <b>20 €</b>. Il en manque 2, pris dans le lot 2 : 2 × 3,00 = <b>6 €</b>.<br>Montant de la sortie : 20 + 6 = <b>26 €</b>. Il reste 8 calendriers du lot 2 : 8 × 3,00 = <b>24 €</b>.</div>
+    </div>
+    <div class="practice">
+      <h3><span class="tag">Je m'entraîne</span></h3>
+      <p>Le <b>bracelet étoile BIJ042</b> en novembre :</p>
+      <div class="exemple">01/11 : stock initial <b>20</b> bracelets à <b>3,50 €</b> · 05/11 : entrée <b>30</b> à <b>4,00 €</b> · 10/11 : sortie <b>25</b> · 15/11 : entrée <b>20</b> à <b>4,20 €</b> · 20/11 : sortie <b>30</b></div>
+      <ol class="qlist">
+        <li><span class="q">Le 05/11, après l'entrée : combien de bracelets en stock ?</span><input class="f" data-a="50"></li>
+        <li><span class="q">Le 05/11 : valeur du stock (70,00 + 30 × 4,00) ?</span><span><input class="f" data-a="190"> €</span></li>
+        <li><span class="q">Sortie du 10/11 : combien de bracelets viennent du lot à 3,50 € ?</span><input class="f" data-a="20"></li>
+        <li><span class="q">Sortie du 10/11 : combien viennent du lot à 4,00 € ?</span><input class="f" data-a="5"></li>
+        <li><span class="q">Montant de la sortie du 10/11 ?</span><span><input class="f" data-a="90"> €</span></li>
+        <li><span class="q">Après le 10/11 : valeur du stock restant ?</span><span><input class="f" data-a="100"> €</span></li>
+        <li><span class="q">Le 15/11, après l'entrée : valeur du stock ?</span><span><input class="f" data-a="184"> €</span></li>
+        <li><span class="q">Sortie du 20/11 : combien viennent du lot à 4,00 € ?</span><input class="f" data-a="25"></li>
+        <li><span class="q">Sortie du 20/11 : combien viennent du lot à 4,20 € ?</span><input class="f" data-a="5"></li>
+        <li><span class="q">Montant de la sortie du 20/11 ?</span><span><input class="f" data-a="121"> €</span></li>
+        <li><span class="q">Stock final : combien de bracelets ?</span><input class="f" data-a="15"></li>
+        <li><span class="q">Stock final : quelle valeur ?</span><span><input class="f" data-a="63"> €</span></li>
+      </ol>
+      <div class="actions"><button class="btn check" type="button">Vérifier mes réponses</button><button class="btn ghost solbtn" type="button" hidden>Voir la correction</button></div>
+      <p class="fb" role="status"></p>
+      <p class="hint" hidden><b>Indice :</b> dessine les lots comme dans l'exemple. Le 10/11, le lot à 3,50 € n'a que 20 bracelets : il en manque 5, pris dans le lot à 4,00 €. 20 × 3,50 + 5 × 4,00 = 70 + 20 = 90.</p>
+      <div><button class="btn next" type="button" hidden>Voir mon sapin</button></div>
+    </div>
+  </section>
+
+  <section class="card memo" aria-labelledby="memo-t">
+    <p class="eyebrow">À recopier dans le cahier</p>
+    <h2 id="memo-t">Mon mémo des stocks</h2>
+    <ol id="memo">
+      <li data-n="1"><span class="lock">Réussis la mission 1 pour débloquer.</span><span class="txt">Le stock <b>augmente</b> avec les entrées et <b>diminue</b> avec les sorties. Chaque mouvement est prouvé par un bon.</span></li>
+      <li data-n="2"><span class="lock">Réussis la mission 2 pour débloquer.</span><span class="txt">WH = réserve, IN = entrée, OUT = sortie. Je vérifie toujours la <b>référence</b>.</span></li>
+      <li data-n="3"><span class="lock">Réussis la mission 3 pour débloquer.</span><span class="txt"><b>Nouveau stock = stock d'avant + entrée − sortie</b></span></li>
+      <li data-n="4"><span class="lock">Réussis la mission 4 pour débloquer.</span><span class="txt"><b>Stock d'alerte = sorties par jour × délai de livraison + stock minimum</b></span></li>
+      <li data-n="5"><span class="lock">Réussis la mission 5 pour débloquer.</span><span class="txt"><b>Stock théorique = stock réel + achetée en attente − vendue en attente.</b> Je commande si théorique ≤ alerte. <b>Quantité à commander = stock maximum − stock théorique.</b></span></li>
+      <li data-n="6"><span class="lock">Réussis la mission 6 pour débloquer.</span><span class="txt"><b>Montant = quantité × prix unitaire</b></span></li>
+      <li data-n="7"><span class="lock">Réussis la mission 7 pour débloquer.</span><span class="txt"><b>CMUP = (valeur du stock + valeur de l'entrée) ÷ (quantité en stock + quantité entrée)</b>, recalculé à chaque entrée. Les sorties sont valorisées au CMUP.</span></li>
+      <li data-n="8"><span class="lock">Réussis la mission 8 pour débloquer.</span><span class="txt"><b>PEPS</b> : les premiers produits entrés sortent en premier, à leur propre prix d'achat.</span></li>
+    </ol>
+  </section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var KEY='lbshop-sapin-v1';
+  var NAMES=['Les mots du stock','Les bons','La fiche de stock',"Le stock d'alerte",'Faut-il commander ?','La valeur du stock','Le CMUP','Le PEPS'];
+  var state={done:[],vals:{},cur:1,tries:{}};
+  try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.done)state=Object.assign(state,s);}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+  /* ----- bons ----- */
+  var G='Guirlande lumineuse LED 5 m';
+  var BONS=[
+    {ref:'JOU118',des:'Peluche renne 30 cm',date:'06/11',n:'WH/IN313',e:20,pu:'8,50',a:'X'},
+    {ref:'DEC205',des:G,date:'12/11',n:'WH/IN311',e:50,pu:'5,00',a:'E'},
+    {ref:'DEC205',des:G,date:'02/11',n:'WH/IN310',e:60,pu:'4,80',a:'E'},
+    {ref:'DEC205',des:G,date:'20/11',n:'WH/OUT215',s:35,a:'S'},
+    {ref:'DEC250',des:'Guirlande lumineuse LED 10 m',date:'07/11',n:'WH/IN314',e:25,pu:'7,90',a:'X'},
+    {ref:'DEC205',des:G,date:'05/11',n:'WH/OUT211',s:15,a:'S'},
+    {ref:'BIJ042',des:'Bracelet étoile',date:'14/11',n:'WH/OUT216',s:4,a:'X'},
+    {ref:'DEC205',des:G,date:'09/11',n:'WH/OUT212',s:30,a:'S'},
+    {ref:'DEC205',des:G,date:'16/11',n:'WH/OUT214',s:45,a:'S'}
+  ];
+  function bonHTML(b,withSel,compact){
+    var mv='<span>Quantité : <b>'+(b.e!=null?b.e:b.s)+'</b></span>';
+    return '<div class="bon'+(compact?' compact':'')+'"><div class="r"><span class="ref">'+b.ref+'</span><span class="num">'+b.date+'</span></div>'+
+      '<div class="des">'+b.des+'</div><div class="r"><span>N° '+b.n+'</span></div><div class="mv">'+mv+'</div>'+
+      (withSel?'<select class="f" data-o="m2" data-a="'+b.a+'"></select>':'')+'</div>';
+  }
+  document.getElementById('bons2').innerHTML=BONS.map(function(b){return bonHTML(b,true,false)}).join('');
+  document.getElementById('bons3').innerHTML=BONS.map(function(b){return bonHTML(b,false,true)}).join('');
+
+  var OPTS={
+    m1:[['fiche','La fiche de stock'],['sortie','Une sortie'],['ref','La référence'],['be',"Le bon d'entrée"],['init','Le stock initial'],['stock','Le stock'],['bs','Le bon de sortie'],['entree','Une entrée']],
+    m2:[['S','Sortie de DEC205'],['X','Autre produit'],['E','Entrée de DEC205']],
+    wh:[['cli','Le client'],['ent',"L'entrepôt (la réserve)"],['fac','La facture']],
+    on:[['O','Oui'],['N','Non']]
+  };
+  document.querySelectorAll('select[data-o]').forEach(function(s){
+    s.innerHTML='<option value="">— choisir —</option>'+OPTS[s.dataset.o].map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+  });
+
+  /* ids, labels, restore */
+  document.querySelectorAll('.mission').forEach(function(sec){
+    var n=sec.dataset.n;
+    sec.querySelectorAll('.f').forEach(function(el,i){
+      el.id='f'+n+'-'+i;
+      if(el.tagName==='INPUT'){el.setAttribute('inputmode','decimal');el.setAttribute('autocomplete','off');}
+      if(!el.getAttribute('aria-label')){
+        var tr=el.closest('tr'),li=el.closest('li'),bon=el.closest('.bon'),lab='';
+        if(tr){lab=tr.cells[0].textContent+' '+(tr.cells[1]?tr.cells[1].textContent:'');}
+        else if(li){lab=li.querySelector('.q').textContent;}
+        else if(bon){lab='Bon '+bon.querySelector('.num').textContent+' '+bon.querySelector('.ref').textContent;}
+        el.setAttribute('aria-label',(lab+' – réponse '+(i+1)).trim());
+      }
+      if(state.vals[el.id]!=null)el.value=state.vals[el.id];
+    });
+  });
+
+  function parseNum(v){
+    v=String(v).replace(/\s|€/g,'').replace('−','-').replace(',','.');
+    if(v==='')return null;
+    var n=Number(v);return isNaN(n)?NaN:n;
+  }
+  function isOk(el){
+    var a=el.dataset.a,v=el.value.trim();
+    if(el.tagName==='SELECT')return v===a;
+    if(a==='')return v===''||parseNum(v)===0;
+    var n=parseNum(v);
+    return n!==null&&!isNaN(n)&&Math.abs(n-Number(a))<0.006;
+  }
+  function fmt(el){
+    var a=el.dataset.a;
+    if(el.tagName==='SELECT'){var o=el.querySelector('option[value="'+a+'"]');return o?o.textContent:a;}
+    if(a==='')return '(vide)';
+    var n=Number(a);
+    var dec=a.indexOf('.')>=0||Math.abs(n)>=100||(n%1!==0)||el.closest('#m6,#m7')||(el.parentNode&&el.parentNode.textContent.indexOf('€')>=0);
+    return dec?n.toFixed(2).replace('.',','):String(n);
+  }
+
+  /* ----- sapin ----- */
+  var svg=document.getElementById('tree'),NS='http://www.w3.org/2000/svg';
+  function mk(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+  var defs=mk('defs',{});
+  var f=mk('filter',{id:'glow',x:'-150%',y:'-150%',width:'400%',height:'400%'},defs);
+  mk('feGaussianBlur',{stdDeviation:'3.2',result:'b'},f);
+  var m=mk('feMerge',{},f);mk('feMergeNode',{'in':'b'},m);mk('feMergeNode',{'in':'SourceGraphic'},m);
+  var f2=mk('filter',{id:'glow2',x:'-100%',y:'-100%',width:'300%',height:'300%'},defs);
+  mk('feGaussianBlur',{stdDeviation:'6',result:'b'},f2);
+  var m2=mk('feMerge',{},f2);mk('feMergeNode',{'in':'b'},m2);mk('feMergeNode',{'in':'SourceGraphic'},m2);
+
+  var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+  for(var i=0;i<46;i++)mk('circle',{cx:(rnd()*400).toFixed(1),cy:(rnd()*470).toFixed(1),r:(0.8+rnd()*1.8).toFixed(1),fill:'#ffffff',opacity:(0.15+rnd()*0.4).toFixed(2)});
+  mk('ellipse',{cx:200,cy:512,rx:175,ry:12,fill:'#dde7f2',opacity:'.9'});
+
+  var TIERS=[[58,190,82],[118,322,128],[228,452,168]];
+  function tierPath(top,base,hw){
+    var d='M200 '+top+' L'+(200+hw)+' '+base,n=Math.round(hw/20)*2;
+    for(var i=1;i<=n;i++){var x=200+hw-i*(2*hw)/n;d+=' L'+x.toFixed(1)+' '+(i%2?base+10:base);}
+    return d+'Z';
+  }
+  mk('rect',{x:186,y:448,width:28,height:28,fill:'#6b4429'});
+  [TIERS[2],TIERS[1],TIERS[0]].forEach(function(t){
+    mk('path',{d:tierPath(t[0],t[1],t[2]),fill:'#1d6a47',stroke:'#134a31','stroke-width':2,'stroke-linejoin':'round'});
+    mk('path',{d:'M200 '+t[0]+' L'+(200-t[2]*0.92)+' '+(t[1]-2)+' L'+(200-t[2]*0.25)+' '+(t[1]-4)+'Z',fill:'#15553a',opacity:'.55'});
+  });
+  mk('path',{d:'M158 472 L242 472 L233 512 L167 512 Z',fill:'#cf3f36'});
+  mk('rect',{x:154,y:466,width:92,height:10,rx:3,fill:'#a83129'});
+  var tx=mk('text',{x:200,y:498,'text-anchor':'middle','font-family':'Bricolage Grotesque, sans-serif','font-weight':'800','font-size':'12','letter-spacing':'2',fill:'#fff'});tx.textContent='LB SHOP';
+
+  function hwAt(y){var mx=0;TIERS.forEach(function(t){if(y>=t[0]&&y<=t[1])mx=Math.max(mx,t[2]*(y-t[0])/(t[1]-t[0]));});return mx;}
+  var GY=[432,392,352,312,272,232,190,150];
+  var COLORS=['#f2b230','#ff5a4e','#6cc6f2','#fff4d8'];
+  var groups={};
+  GY.forEach(function(y,k){
+    var n=k+1,w=hwAt(y)*0.84,flip=k%2;
+    var p0=[200-w,flip?y-2:y-14],p1=[200+w,flip?y-14:y-2],c=[200,y+24];
+    var wire=mk('path',{d:'M'+p0+' Q'+c+' '+p1,'class':'wire'});
+    var count=Math.max(3,Math.min(8,Math.round(w/19))),bulbs=[];
+    for(var i=0;i<count;i++){
+      var t=(i+0.5)/count,u=1-t;
+      var x=u*u*p0[0]+2*u*t*c[0]+t*t*p1[0],yy=u*u*p0[1]+2*u*t*c[1]+t*t*p1[1];
+      var b=mk('circle',{cx:x.toFixed(1),cy:(yy+4).toFixed(1),r:6.2,'class':'bulb'});
+      b.style.setProperty('--c',COLORS[(i+k)%4]);
+      b.style.animationDelay=(-(i*0.37+k*0.21)).toFixed(2)+'s';
+      bulbs.push(b);
+    }
+    var lab=mk('text',{x:(200+w+12).toFixed(1),y:(flip?y-12:y),'class':'glabel'});lab.textContent=n;
+    groups[n]={wire:wire,bulbs:bulbs,lab:lab};
+  });
+  function starPath(cx,cy,R,r){var d='';for(var i=0;i<10;i++){var a=-Math.PI/2+i*Math.PI/5,rr=i%2?r:R;d+=(i?'L':'M')+(cx+rr*Math.cos(a)).toFixed(1)+' '+(cy+rr*Math.sin(a)).toFixed(1);}return d+'Z';}
+  var star=mk('path',{d:starPath(200,44,26,11),'class':'star'});
+
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function light(n,animate){
+    var g=groups[n];if(!g)return;
+    g.wire.classList.add('lit');g.lab.classList.add('lit');
+    g.bulbs.forEach(function(b,i){
+      if(animate&&!reduce)setTimeout(function(){b.classList.add('lit');},120*i);else b.classList.add('lit');
+    });
+  }
+  function unlightAll(){svg.querySelectorAll('.lit').forEach(function(e){e.classList.remove('lit');});}
+
+  /* ----- nav ----- */
+  var nav=document.getElementById('nav');
+  nav.innerHTML=NAMES.map(function(nm,i){return '<button type="button" data-go="'+(i+1)+'"><b>'+(i+1)+'</b><span>'+nm+'</span></button>';}).join('');
+
+  function refresh(){
+    var d=state.done.length;
+    document.getElementById('count').textContent=d+' / 8';
+    document.getElementById('barfill').style.width=(d/8*100)+'%';
+    nav.querySelectorAll('button').forEach(function(b){
+      var n=+b.dataset.go;
+      b.classList.toggle('done',state.done.indexOf(n)>=0);
+      b.setAttribute('aria-current',n===state.cur?'true':'false');
+    });
+    document.querySelectorAll('#memo li').forEach(function(li){li.classList.toggle('on',state.done.indexOf(+li.dataset.n)>=0);});
+    var all=d===8;
+    star.classList.toggle('lit',all);
+    document.getElementById('finale').hidden=!all;
+  }
+  function show(n,scroll){
+    state.cur=n;save();
+    document.querySelectorAll('.mission').forEach(function(s){s.hidden=+s.dataset.n!==n;});
+    refresh();
+    if(scroll){var s=document.getElementById('m'+n);if(s)s.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});}
+  }
+  nav.addEventListener('click',function(e){var b=e.target.closest('button[data-go]');if(b)show(+b.dataset.go,true);});
+
+  /* ----- vérification ----- */
+  function check(sec){
+    var n=+sec.dataset.n,fields=sec.querySelectorAll('.f'),bad=0,empty=0;
+    fields.forEach(function(el){
+      var ok=isOk(el);
+      el.classList.toggle('ok',ok);el.classList.toggle('bad',!ok);
+      if(!ok){bad++;if(el.value.trim()==='')empty++;}
+      else{var s=el.parentNode.querySelector('.sol[data-for="'+el.id+'"]');if(s)s.remove();}
+    });
+    var fb=sec.querySelector('.fb');
+    if(bad===0){
+      fb.className='fb ok';
+      fb.textContent=n<8?'Bravo ! Tout est juste. La guirlande n° '+n+' s’allume.':'Bravo ! Tout est juste. La dernière guirlande s’allume.';
+      sec.querySelector('.next').hidden=false;
+      sec.querySelector('.solbtn').hidden=true;
+      if(state.done.indexOf(n)<0){state.done.push(n);light(n,true);}
+      save();refresh();
+      if(state.done.length===8&&!reduce){star.classList.remove('lit');setTimeout(function(){star.classList.add('lit');},900);}
+      return;
+    }
+    state.tries[n]=(state.tries[n]||0)+1;save();
+    fb.className='fb bad';
+    fb.textContent=(bad===1?'1 case est à revoir':bad+' cases sont à revoir')+(empty?' (dont '+empty+' vide'+(empty>1?'s':'')+')':'')+'. Les cases en rouge sont fausses, les vertes sont justes.';
+    sec.querySelector('.hint').hidden=false;
+    if(state.tries[n]>=3)sec.querySelector('.solbtn').hidden=false;
+  }
+  function reveal(sec){
+    sec.querySelectorAll('.f.bad').forEach(function(el){
+      if(el.parentNode.querySelector('.sol[data-for="'+el.id+'"]'))return;
+      var s=document.createElement('span');s.className='sol';s.dataset.for=el.id;s.textContent='→ '+fmt(el);
+      el.insertAdjacentElement('afterend',s);
+    });
+    var fb=sec.querySelector('.fb');fb.className='fb bad';fb.textContent='La bonne réponse est écrite à côté de chaque case rouge. Recopie-la puis vérifie à nouveau.';
+  }
+
+  var main=document.getElementById('main');
+  main.addEventListener('click',function(e){
+    var sec=e.target.closest('.mission');if(!sec)return;
+    if(e.target.closest('.check'))check(sec);
+    else if(e.target.closest('.solbtn'))reveal(sec);
+    else if(e.target.closest('.next')){var n=+sec.dataset.n;if(n<8)show(n+1,true);else document.getElementById('tree').scrollIntoView({behavior:reduce?'auto':'smooth'});}
+  });
+  function onEdit(e){
+    var el=e.target;if(!el.classList||!el.classList.contains('f'))return;
+    state.vals[el.id]=el.value;save();
+    el.classList.remove('ok','bad');
+  }
+  main.addEventListener('input',onEdit);main.addEventListener('change',onEdit);
+
+  /* ----- reset ----- */
+  var rz=document.getElementById('resetzone');
+  function resetUI(){rz.innerHTML='<button class="linkbtn" id="resetbtn" type="button">Recommencer depuis le début</button>';}
+  rz.addEventListener('click',function(e){
+    if(e.target.id==='resetbtn'){
+      rz.innerHTML='<span>Tout effacer ?</span><button class="linkbtn" id="resetyes" type="button">Oui, recommencer</button><button class="linkbtn" id="resetno" type="button">Annuler</button>';
+      document.getElementById('resetno').focus();
+    }else if(e.target.id==='resetno'){resetUI();}
+    else if(e.target.id==='resetyes'){
+      state={done:[],vals:{},cur:1,tries:{}};save();
+      document.querySelectorAll('.f').forEach(function(el){el.value='';el.classList.remove('ok','bad');});
+      document.querySelectorAll('.sol').forEach(function(s){s.remove();});
+      document.querySelectorAll('.mission').forEach(function(s){s.querySelector('.fb').textContent='';s.querySelector('.hint').hidden=true;s.querySelector('.next').hidden=true;s.querySelector('.solbtn').hidden=true;});
+      unlightAll();resetUI();show(1,false);
+    }
+  });
+
+  /* ----- init ----- */
+  state.done.forEach(function(n){
+    light(n,false);
+    var sec=document.getElementById('m'+n);
+    if(sec){sec.querySelector('.next').hidden=false;var fb=sec.querySelector('.fb');fb.className='fb ok';fb.textContent='Mission réussie. La guirlande n° '+n+' est allumée.';}
+  });
+  Object.keys(state.tries).forEach(function(n){var s=document.getElementById('m'+n);if(s&&state.tries[n]>=1&&state.done.indexOf(+n)<0)s.querySelector('.hint').hidden=false;if(s&&state.tries[n]>=3&&state.done.indexOf(+n)<0)s.querySelector('.solbtn').hidden=false;});
+  show(state.cur||1,false);
+})();
+</script>
+
+</body>
+</html>
